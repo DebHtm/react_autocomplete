@@ -3,13 +3,17 @@ import './App.scss';
 import { peopleFromServer } from './data/people';
 import classNames from 'classnames';
 
+type Props = {
+  debounceDelay?: number;
+};
+
 type Person = {
   name: string;
   born: number;
   died: number;
 };
 
-export const App: React.FC = () => {
+export const App: React.FC<Props> = ({ debounceDelay = 300 }) => {
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [query, setQuery] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
@@ -18,11 +22,11 @@ export const App: React.FC = () => {
 
   const timerId = useRef(0);
 
-  const hendleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
+    const trimmedValue = value.trim();
 
     setQuery(value);
-    setAppliedQuery('');
     setSelectedPerson(null);
 
     if (timerId.current) {
@@ -34,8 +38,8 @@ export const App: React.FC = () => {
         return;
       }
 
-      setAppliedQuery(value);
-    }, 300);
+      setAppliedQuery(trimmedValue);
+    }, debounceDelay);
   };
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export const App: React.FC = () => {
               className="input"
               data-cy="search-input"
               value={query}
-              onChange={hendleQueryChange}
+              onChange={handleQueryChange}
               onFocus={() => setActive(true)}
               onBlur={() => setActive(false)}
             />
@@ -82,7 +86,12 @@ export const App: React.FC = () => {
                   className="dropdown-item"
                   data-cy="suggestion-item"
                   key={person.name}
-                  onMouseDown={() => setSelectedPerson(person)}
+                  onMouseDown={() => {
+                    setSelectedPerson(person);
+                    setQuery(person.name);
+                    setAppliedQuery(person.name);
+                    setActive(false);
+                  }}
                 >
                   <p className="has-text-link">{person.name}</p>
                 </div>
