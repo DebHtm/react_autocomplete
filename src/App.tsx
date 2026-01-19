@@ -5,6 +5,7 @@ import classNames from 'classnames';
 
 type Props = {
   debounceDelay?: number;
+  onSelected?: (person: Person) => void;
 };
 
 type Person = {
@@ -13,7 +14,7 @@ type Person = {
   died: number;
 };
 
-export const App: React.FC<Props> = ({ debounceDelay = 300 }) => {
+export const App: React.FC<Props> = ({ debounceDelay = 300, onSelected }) => {
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [query, setQuery] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
@@ -75,7 +76,9 @@ export const App: React.FC<Props> = ({ debounceDelay = 300 }) => {
               value={query}
               onChange={handleQueryChange}
               onFocus={() => setActive(true)}
-              onBlur={() => setActive(false)}
+              onBlur={() => {
+                setTimeout(() => setActive(false), 150);
+              }}
             />
           </div>
 
@@ -91,6 +94,7 @@ export const App: React.FC<Props> = ({ debounceDelay = 300 }) => {
                     setQuery(person.name);
                     setAppliedQuery(person.name);
                     setActive(false);
+                    onSelected?.(person);
                   }}
                 >
                   <p className="has-text-link">{person.name}</p>
